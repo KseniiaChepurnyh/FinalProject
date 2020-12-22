@@ -52,28 +52,20 @@ class MainViewController: UIViewController {
             }
             
             if session.state.rawValue == SessionState.inProgress.rawValue {
-                actionButton.isHidden = true
+                configureUIForSessionInProgress()
                 shouldPresentLoadingView(false)
                 showActionView(shouldShow: true, config: .sessionInProgress)
                 Service.shared.observeSessionCancelled(session: session) { [self] in
-                    self.showActionView(shouldShow: false)
-                    self.actionButton.setImage(#imageLiteral(resourceName: "log-out").withRenderingMode(.alwaysOriginal), for: .normal)
-                    self.actionButtonConfig = .showMenu
-                    self.centerMapOnUserLocation(coordinate: self.locationManager.location!.coordinate)
-                    self.presentAlertController(withTitle: "Ooops!", message: "Companion ended session")
-                    self.actionButton.isHidden = false
-                    self.destinationInputActivationView.isHidden = false
-                    self.destinationInputActivationView.alpha = 1
-                    removeAnnotationsAndRouts()
+                    getUIBackToNormal()
+                    presentAlertController(withTitle: "Ooops!", message: "Session ended")
                 }
             }
             
             if session.state.rawValue == SessionState.inProgress.rawValue && session.role.rawValue == SessionRole.companion.rawValue {
-                actionButton.isHidden = true
-                destinationInputActivationView.isHidden = true
+                configureUIForSessionInProgress()
                 guard let companionUID = session.companionUID else { return }
                 let currentAnno = CompanionAnnotation(uid: companionUID, coordinate: session.currentCoordinates)
-                
+
                 var companiomIsVisible: Bool {
                     return self.mapView.annotations.contains(where: { currentAnno -> Bool in
                         guard let companionAnno = currentAnno as? CompanionAnnotation else { return false}
@@ -99,7 +91,6 @@ class MainViewController: UIViewController {
                     
                 }
             }
-            print("something changed in session \(session.currentCoordinates)")
         }
     }
     var companions: [Companion]?
@@ -122,10 +113,25 @@ class MainViewController: UIViewController {
     
     // MARK: Functions
     
+    func configureUIForSessionInProgress() {
+        actionButton.isHidden = true
+        destinationInputActivationView.isHidden = true
+    }
+    
+    func getUIBackToNormal() {
+        self.showActionView(shouldShow: false)
+        self.actionButton.setImage(#imageLiteral(resourceName: "log-out").withRenderingMode(.alwaysOriginal), for: .normal)
+        self.actionButtonConfig = .showMenu
+        self.actionButton.isHidden = false
+        self.destinationInputActivationView.isHidden = false
+        self.destinationInputActivationView.alpha = 1
+        self.centerMapOnUserLocation(coordinate: self.locationManager.location!.coordinate)
+        removeAnnotationsAndRouts()
+    }
+    
     @objc func actionButtonPressed() {
         switch actionButtonConfig {
         case .showMenu:
-            print("hey")
             do {
                 try Auth.auth().signOut()
             } catch {
@@ -135,7 +141,6 @@ class MainViewController: UIViewController {
             let controller = LoginViewController()
             controller.modalPresentationStyle = .fullScreen
             present(controller, animated: true, completion: nil)
-           //delegate?.handleMenuToggle()
         case .dismissActionView:
             removeAnnotationsAndRouts()
             mapView.showAnnotations(mapView.annotations, animated: true)
@@ -145,8 +150,6 @@ class MainViewController: UIViewController {
                 self.destinationInputActivationView.alpha = 1
                 self.actionButton.setImage(#imageLiteral(resourceName: "log-out").withRenderingMode(.alwaysOriginal), for: .normal)
                 self.actionButtonConfig = .showMenu
-                //self.configureActionButton(config: .showMenu)
-                //self.animateRideActionView(shouldShow: false)
             }
         }
     }
@@ -279,6 +282,40 @@ class MainViewController: UIViewController {
                                         longitudinalMeters: 2000)
         mapView.setRegion(region, animated: true)
     }
+    
+    func generatePolyLine(fromStart start: MKMapItem, toDestination destination: MKMapItem) {
+        let request = MKDirections.Request()
+        request.source = start
+        request.destination = destination
+        request.transportType = .automobile
+        
+        let directionRequest = MKDirections(request: request)
+        directionRequest.calculate { (response, error) in
+            guard let response = response else { return }
+            self.route = response.routes[0]
+            guard let polyline = self.route?.polyline else { return }
+            self.mapView.addOverlay(polyline)
+        }
+    }
+    
+    func searchBy(naturalLanguageQuery: String, completion: @escaping([MKPlacemark]) -> Void) {
+        var results = [MKPlacemark]()
+        
+        let request = MKLocalSearch.Request()
+        request.region = mapView.region
+        request.naturalLanguageQuery = naturalLanguageQuery
+        
+        let search = MKLocalSearch(request: request)
+        search.start { (response, error) in
+            guard let response = response else { return }
+            
+            response.mapItems.forEach({ item in
+                results.append(item.placemark)
+            })
+            
+            completion(results)
+        }
+    }
 
 }
 
@@ -304,7 +341,7 @@ extension MainViewController: CLLocationManagerDelegate {
     }
 }
 
-// MARK: Extensions
+// MARK: DestinationImputActivationViewDelegate
 
 extension MainViewController: DestinationImputActivationViewDelegate {
     func presentDestinationImputView() {
@@ -330,6 +367,8 @@ extension MainViewController: DestinationInputViewDelegate {
 
     }
 }
+
+// MARK: UITableViewDelegate, UITableViewDataSource
 
 extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     
@@ -362,6 +401,8 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     
 }
 
+// MARK: MKMapViewDelegate
+
 extension MainViewController: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         if let annotation = annotation as? CompanionAnnotation {
@@ -392,58 +433,15 @@ extension MainViewController: MKMapViewDelegate {
     }
 }
 
-private extension MainViewController {
-    func searchBy(naturalLanguageQuery: String, completion: @escaping([MKPlacemark]) -> Void) {
-        var results = [MKPlacemark]()
-        
-        let request = MKLocalSearch.Request()
-        request.region = mapView.region
-        request.naturalLanguageQuery = naturalLanguageQuery
-        
-        let search = MKLocalSearch(request: request)
-        search.start { (response, error) in
-            guard let response = response else { return }
-            
-            response.mapItems.forEach({ item in
-                results.append(item.placemark)
-            })
-            
-            completion(results)
-        }
-    }
-    
-    func generatePolyLine(fromStart start: MKMapItem, toDestination destination: MKMapItem) {
-        let request = MKDirections.Request()
-        request.source = start
-        request.destination = destination
-        request.transportType = .automobile
-        
-        let directionRequest = MKDirections(request: request)
-        directionRequest.calculate { (response, error) in
-            guard let response = response else { return }
-            self.route = response.routes[0]
-            guard let polyline = self.route?.polyline else { return }
-            self.mapView.addOverlay(polyline)
-        }
-    }
-}
+// MARK: ActionViewDelegate
 
 extension MainViewController: ActionViewDelegate {
     func endSession() {
         guard let session = session else { return }
         Service.shared.endSession(session: session) { (error, ref) in
             self.showActionView(shouldShow: false)
+            self.getUIBackToNormal()
         }
-        self.removeAnnotationsAndRouts()
-        
-        self.actionButton.setImage(#imageLiteral(resourceName: "log-out").withRenderingMode(.alwaysOriginal), for: .normal)
-        self.actionButtonConfig = .showMenu
-        self.centerMapOnUserLocation(coordinate: locationManager.location!.coordinate)
-        self.presentAlertController(withTitle: "", message: "You ended session")
-        self.actionButton.isHidden = false
-        self.destinationInputActivationView.isHidden = false
-        self.destinationInputActivationView.alpha = 1
-        
     }
     
     func createSession(_ viev: ActionView) {
@@ -463,6 +461,8 @@ extension MainViewController: ActionViewDelegate {
     }
 
 }
+
+// MARK: AcceptSessionDelegate
 
 extension MainViewController: AcceptSessionDelegate {
     func didAcceptSession(_ session: Session) {

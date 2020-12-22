@@ -132,7 +132,6 @@ struct Service {
         let lat = location.coordinate.latitude
         let lon = location.coordinate.longitude
         let values = [lat, lon]
-        //USERS_REF.child(userUID).child("session").child("currentLocation").updateChildValues(["currentLocation": values])
         USERS_REF.child(userUID).child("session").updateChildValues(["currentLocation": values])
         guard let companionUID = session.companionUID else { return }
         USERS_REF.child(companionUID).child("session").updateChildValues(["currentLocation": values])

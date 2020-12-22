@@ -38,6 +38,7 @@ class ActionView: UIView {
     
     // MARK: - Properties
     
+    var toggle = false
     var destination: MKPlacemark? {
         didSet {
             titleLabel.text = destination?.name
@@ -161,7 +162,6 @@ class ActionView: UIView {
         addSubview(actionButton)
         actionButton.snp.makeConstraints { (make) in
             make.top.equalTo(collectionView.snp.bottom).offset(10)
-            //make.top.equalTo(safeAreaLayoutGuide).offset(10).priority(600)
             make.bottom.equalTo(safeAreaLayoutGuide).inset(20)
             make.left.equalTo(12)
             make.right.equalTo(-12)
@@ -206,6 +206,24 @@ class ActionView: UIView {
         }
     }
     
+    func toggleUI() {
+        if toggle == false {
+            callCompanionButton.isHidden = true
+            titleLabel.isHidden = false
+            addressLabel.isHidden = false
+            collectionView.isHidden = false
+            actionButton.backgroundColor = .lightGray
+            
+            toggle = true
+        } else {
+            actionButton.isEnabled = true
+            addressLabel.isHidden = true
+            collectionView.isHidden = true
+            actionButton.backgroundColor = .mainBlueTint
+            toggle = false
+        }
+    }
+    
 //    @objc func sosAction() {
 //        print("Sos!")
 //    }
@@ -224,36 +242,25 @@ class ActionView: UIView {
     public func configureUI(withConfig config: ActionViewConfiguration) {
         switch config {
         case .request:
-            //sosButton.isHidden = true
-            callCompanionButton.isHidden = true
-            
-            titleLabel.isHidden = false
-            addressLabel.isHidden = false
-            collectionView.isHidden = false
+            toggleUI()
             buttonAction = .request
             actionButton.setTitle(buttonAction.description, for: .normal)
             
             buttonAction = .request
             actionButton.setTitle(buttonAction.description, for: .normal)
-            actionButton.backgroundColor = .lightGray
             
         case .sessionInProgress:
             guard let session = session else { return }
             guard let companionName = session.companionName else { return }
             
             if session.role.rawValue == SessionRole.user.rawValue {
-                //sosButton.isHidden = false
                 titleLabel.text = "\(companionName) is looking after you"
                 callCompanionButton.isHidden = false
             } else {
                 titleLabel.text = "You are looking after \(companionName)"
                 callCompanionButton.isHidden = false
             }
-            actionButton.backgroundColor = .mainBlueTint
-            actionButton.isEnabled = true
-            separator.removeFromSuperview()
-            addressLabel.isHidden = true
-            collectionView.isHidden = true
+            toggleUI()
             buttonAction = .end
             actionButton.setTitle(buttonAction.description, for: .normal)
         }
