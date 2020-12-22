@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import MapKit
 
 // MARK: Text Field
 
@@ -28,14 +29,14 @@ extension UITextField {
 extension UILabel {
     func createLogo() -> UILabel {
         let label = UILabel()
-        label.text = "Finder"
-        label.font = UIFont(name: "Avenir-Light", size: 36)
+        label.text = "COMPANION"
+        label.font = UIFont(name: "Avenir-Light", size: 30)
         label.textColor = UIColor(white: 0, alpha: 0.8)
         return label
     }
 }
 
-// MARK: Container View
+// MARK: View
 
 extension UIView {
     func createInputContainerView(image: UIImage, textField: UITextField) -> UIView {
@@ -66,6 +67,13 @@ extension UIView {
             make.height.equalTo(2)
         }
         return view
+    }
+    
+    func addShadow() {
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOpacity = 0.6
+        layer.shadowOffset = CGSize(width: 0.7, height: 0.7)
+        layer.masksToBounds = false
     }
     
 }
@@ -103,5 +111,72 @@ extension UIColor {
     
     static let backgruondColor = UIColor.rgb(red: 241, green: 242, blue: 246)
     static let mainBlueTint = UIColor.rgb(red: 30, green: 144, blue: 255)
+}
+
+extension MKPlacemark {
+    var address: String? {
+        get {
+            guard let subThoroughfare = subThoroughfare else { return nil }
+            guard let thoroughfare = thoroughfare else { return nil }
+            guard let locality = locality else { return nil }
+            guard let adminArea = administrativeArea else { return nil }
+            
+            return "\(subThoroughfare) \(thoroughfare), \(locality), \(adminArea) "
+        }
+    }
+}
+
+extension UIViewController {
+    func presentAlertController(withTitle title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
     
+    func shouldPresentLoadingView(_ present: Bool, message: String? = nil) {
+        if present {
+            let loadingView = UIView()
+            loadingView.frame = self.view.frame
+            loadingView.backgroundColor = .black
+            loadingView.alpha = 0
+            loadingView.tag = 1
+            
+            let indicator = UIActivityIndicatorView()
+            indicator.style = .large
+            indicator.color = .white
+            indicator.center = view.center
+            
+            let label = UILabel()
+            label.text = message
+            label.font = UIFont.systemFont(ofSize: 20)
+            label.textColor = .white
+            label.textAlignment = .center
+            label.alpha = 0.87
+            
+            view.addSubview(loadingView)
+            loadingView.addSubview(indicator)
+            loadingView.addSubview(label)
+            
+            label.snp.makeConstraints { (make) in
+                make.centerX.equalTo(view.snp.centerX)
+                make.top.equalTo(indicator.snp.bottom).offset(30)
+            }
+            
+            indicator.startAnimating()
+            
+            UIView.animate(withDuration: 0.3) {
+                loadingView.alpha = 0.7
+            }
+        } else {
+            view.subviews.forEach { (subview) in
+                if subview.tag == 1 {
+                    UIView.animate(withDuration: 0.3, animations: {
+                        subview.alpha = 0
+                    }, completion: { _ in
+                        subview.removeFromSuperview()
+                    })
+                }
+            }
+        }
+    }
 }
