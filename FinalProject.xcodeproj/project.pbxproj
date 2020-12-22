@@ -101,6 +101,7 @@
 		DA65C3F3258F904400F05238 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				DA3DBD082580AFFB00C854F0 /* Extensions.swift */,
 				DA6ADC80258CD51B0083D73A /* Service.swift */,
 			);
 			path = Utils;
@@ -132,7 +133,6 @@
 				DAA9F9E92580AAC800C56F5F /* View */,
 				DAA9F9E72580AA9900C56F5F /* Controller */,
 				DAA9F9CD2580A9FF00C56F5F /* AppDelegate.swift */,
-				DA3DBD082580AFFB00C854F0 /* Extensions.swift */,
 				DAA9F9CF2580A9FF00C56F5F /* SceneDelegate.swift */,
 				DAA9F9D32580A9FF00C56F5F /* Main.storyboard */,
 				DAA9F9D62580AA0100C56F5F /* Assets.xcassets */,

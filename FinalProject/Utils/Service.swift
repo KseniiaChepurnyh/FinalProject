@@ -47,7 +47,7 @@ struct Service {
     func fetchCompanions(copmpletion: @escaping([Companion]) -> Void) {
         var companions: [Companion] = []
         guard let userUID = Auth.auth().currentUser?.uid else { return }
-        USERS_REF.observe(.value) { (snapshot) in
+        USERS_REF.observeSingleEvent(of: .value) { (snapshot) in
             guard let dict = snapshot.value as? [String : [String : Any]] else { return }
             for i in dict {
                 if i.key != userUID {

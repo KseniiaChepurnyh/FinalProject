@@ -57,7 +57,7 @@ class MainViewController: UIViewController {
                 showActionView(shouldShow: true, config: .sessionInProgress)
                 Service.shared.observeSessionCancelled(session: session) { [self] in
                     self.showActionView(shouldShow: false)
-                    self.actionButton.setImage(#imageLiteral(resourceName: "baseline_menu_black_36dp").withRenderingMode(.alwaysOriginal), for: .normal)
+                    self.actionButton.setImage(#imageLiteral(resourceName: "log-out").withRenderingMode(.alwaysOriginal), for: .normal)
                     self.actionButtonConfig = .showMenu
                     self.centerMapOnUserLocation(coordinate: self.locationManager.location!.coordinate)
                     self.presentAlertController(withTitle: "Ooops!", message: "Companion ended session")
@@ -106,7 +106,7 @@ class MainViewController: UIViewController {
     
     private let actionButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setImage(#imageLiteral(resourceName: "baseline_menu_black_36dp").withRenderingMode(.alwaysOriginal), for: .normal)
+        button.setImage(#imageLiteral(resourceName: "log-out").withRenderingMode(.alwaysOriginal), for: .normal)
         button.addTarget(self, action: #selector(actionButtonPressed), for: .touchUpInside)
         return button
     }()
@@ -143,7 +143,7 @@ class MainViewController: UIViewController {
 
             UIView.animate(withDuration: 0.3) {
                 self.destinationInputActivationView.alpha = 1
-                self.actionButton.setImage(#imageLiteral(resourceName: "baseline_menu_black_36dp").withRenderingMode(.alwaysOriginal), for: .normal)
+                self.actionButton.setImage(#imageLiteral(resourceName: "log-out").withRenderingMode(.alwaysOriginal), for: .normal)
                 self.actionButtonConfig = .showMenu
                 //self.configureActionButton(config: .showMenu)
                 //self.animateRideActionView(shouldShow: false)
@@ -436,7 +436,7 @@ extension MainViewController: ActionViewDelegate {
         }
         self.removeAnnotationsAndRouts()
         
-        self.actionButton.setImage(#imageLiteral(resourceName: "baseline_menu_black_36dp").withRenderingMode(.alwaysOriginal), for: .normal)
+        self.actionButton.setImage(#imageLiteral(resourceName: "log-out").withRenderingMode(.alwaysOriginal), for: .normal)
         self.actionButtonConfig = .showMenu
         self.centerMapOnUserLocation(coordinate: locationManager.location!.coordinate)
         self.presentAlertController(withTitle: "", message: "You ended session")
