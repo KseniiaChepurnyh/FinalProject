@@ -12,10 +12,6 @@ import MapKit
 enum ActionViewConfiguration {
     case request
     case sessionInProgress
-    
-    init() {
-        self = .request
-    }
 }
 
 enum ButtonAction: CustomStringConvertible {
@@ -27,10 +23,6 @@ enum ButtonAction: CustomStringConvertible {
         case .request: return "SEND INVITATION"
         case .end: return "END"
         }
-    }
-    
-    init() {
-        self = .request
     }
 }
 
@@ -46,8 +38,8 @@ class ActionView: UIView {
         }
     }
     
-    var config = ActionViewConfiguration()
-    var buttonAction = ButtonAction()
+    var config: ActionViewConfiguration = .request
+    var buttonAction: ButtonAction = .request
     private var companions: [Companion] = []
     public var selectedCompanion: Companion?
     var delegate: ActionViewDelegate?
@@ -199,7 +191,7 @@ class ActionView: UIView {
     @objc func actionButtonPressed() {
         switch buttonAction {
         case .request:
-            delegate!.createSession(self)
+            delegate?.createSession(self)
             print("rec")
         case .end:
             delegate?.endSession()
@@ -253,7 +245,7 @@ class ActionView: UIView {
             guard let session = session else { return }
             guard let companionName = session.companionName else { return }
             
-            if session.role.rawValue == SessionRole.user.rawValue {
+            if session.role?.rawValue == SessionRole.user.rawValue {
                 titleLabel.text = "\(companionName) is looking after you"
                 callCompanionButton.isHidden = false
             } else {

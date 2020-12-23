@@ -23,9 +23,9 @@ struct Session {
     var startCoordinates: CLLocationCoordinate2D!
     var destinationCoordinates: CLLocationCoordinate2D!
     let userUID: String!
-    var companionUID: String?
-    var state: SessionState!
-    var role: SessionRole!
+    var companionUID: String!
+    var state: SessionState?
+    var role: SessionRole?
     var currentCoordinates: CLLocationCoordinate2D!
     var companionPhone: String!
     var companionName: String!

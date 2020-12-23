@@ -13,10 +13,6 @@ import Firebase
 private enum ActionButtonConfiguration {
     case showMenu
     case dismissActionView
-    
-    init() {
-        self = .showMenu
-    }
 }
 
 class MainViewController: UIViewController {
@@ -28,9 +24,10 @@ class MainViewController: UIViewController {
     private let destinationInputView = DestinationInputView()
     private let tableView = UITableView()
     private var searchResults = [MKPlacemark]()
-    private var actionButtonConfig = ActionButtonConfiguration()
+    private var actionButtonConfig: ActionButtonConfiguration = .showMenu
     private var route: MKRoute?
     private let actionView = ActionView()
+    var companions: [Companion]?
     
     var user: User? {
         didSet {
@@ -44,14 +41,15 @@ class MainViewController: UIViewController {
         didSet {
             guard let session = session else { return }
             actionView.session = session
-            if session.state.rawValue == SessionState.requested.rawValue && session.role.rawValue == SessionRole.companion.rawValue {
+            guard let sessionState = session.state else { return }
+            if sessionState.rawValue == SessionState.requested.rawValue && session.role?.rawValue == SessionRole.companion.rawValue {
                 let controller = AcceptSessionViewController(session: session)
                 controller.delegate = self
                 controller.modalPresentationStyle = .fullScreen
                 present(controller, animated: true, completion: nil)
             }
             
-            if session.state.rawValue == SessionState.inProgress.rawValue {
+            if session.state?.rawValue == SessionState.inProgress.rawValue {
                 configureUIForSessionInProgress()
                 shouldPresentLoadingView(false)
                 showActionView(shouldShow: true, config: .sessionInProgress)
@@ -61,7 +59,7 @@ class MainViewController: UIViewController {
                 }
             }
             
-            if session.state.rawValue == SessionState.inProgress.rawValue && session.role.rawValue == SessionRole.companion.rawValue {
+            if session.state?.rawValue == SessionState.inProgress.rawValue && session.role?.rawValue == SessionRole.companion.rawValue {
                 configureUIForSessionInProgress()
                 guard let companionUID = session.companionUID else { return }
                 let currentAnno = CompanionAnnotation(uid: companionUID, coordinate: session.currentCoordinates)
@@ -93,8 +91,6 @@ class MainViewController: UIViewController {
             }
         }
     }
-    var companions: [Companion]?
-    
     private let actionButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "log-out").withRenderingMode(.alwaysOriginal), for: .normal)
@@ -427,7 +423,7 @@ extension MainViewController: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
         guard let session = session else { return }
         guard let location = locationManager.location else { return }
-        if session.role.rawValue == SessionRole.user.rawValue {
+        if session.role?.rawValue == SessionRole.user.rawValue {
             Service.shared.updateLocation(location: location, session: session)
         }
     }
