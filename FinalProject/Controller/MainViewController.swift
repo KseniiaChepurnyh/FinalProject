@@ -56,12 +56,13 @@ class MainViewController: UIViewController {
                 Service.shared.observeSessionCancelled(session: session) { [self] in
                     getUIBackToNormal()
                     presentAlertController(withTitle: "Ooops!", message: "Session ended")
+                    self.saveSession(session: session)
                 }
             }
             
             if session.state?.rawValue == SessionState.inProgress.rawValue && session.role?.rawValue == SessionRole.companion.rawValue {
                 configureUIForSessionInProgress()
-                guard let companionUID = session.companionUID else { return }
+                let companionUID = session.companionUID
                 let currentAnno = CompanionAnnotation(uid: companionUID, coordinate: session.currentCoordinates)
 
                 var companiomIsVisible: Bool {
@@ -437,6 +438,7 @@ extension MainViewController: ActionViewDelegate {
         Service.shared.endSession(session: session) { (error, ref) in
             self.showActionView(shouldShow: false)
             self.getUIBackToNormal()
+            self.saveSession(session: session)
         }
     }
     

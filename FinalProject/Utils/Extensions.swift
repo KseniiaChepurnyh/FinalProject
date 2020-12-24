@@ -8,6 +8,7 @@
 import UIKit
 import SnapKit
 import MapKit
+import RealmSwift
 
 // MARK: Text Field
 
@@ -177,6 +178,31 @@ extension UIViewController {
                     })
                 }
             }
+        }
+    }
+    
+    var realm: Realm {
+
+        do {
+            let realm = try Realm()
+            return realm
+        }
+        catch {
+
+        }
+
+        return self.realm
+    }
+    
+    
+    func saveSession(session: Session) {
+        do {
+            try realm.write {
+                realm.add(session)
+                print(Realm.Configuration.defaultConfiguration.fileURL!)
+            }
+        } catch {
+            print("error")
         }
     }
 }

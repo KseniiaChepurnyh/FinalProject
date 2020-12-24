@@ -6,12 +6,12 @@
 //
 
 import CoreLocation
+import RealmSwift
 
 enum SessionState: Int {
     case requested
     case denied
     case inProgress
-    case completed
 }
 
 enum SessionRole: Int {
@@ -19,18 +19,22 @@ enum SessionRole: Int {
     case companion
 }
 
-struct Session {
+class Session: Object {
     var startCoordinates: CLLocationCoordinate2D!
     var destinationCoordinates: CLLocationCoordinate2D!
-    let userUID: String!
-    var companionUID: String!
+//    @objc dynamic var startCoordinatesArr: [Double] = []
+//    @objc dynamic var destinationCoordinatesArr: [Double] = []
+    @objc dynamic var userUID: String = ""
+    @objc dynamic var companionUID: String = ""
     var state: SessionState?
     var role: SessionRole?
     var currentCoordinates: CLLocationCoordinate2D!
-    var companionPhone: String!
-    var companionName: String!
+    @objc dynamic var companionPhone: String = ""
+    @objc dynamic var companionName: String = ""
     
-    init(userUID: String, dictionary: [String: Any]) {
+    convenience init(userUID: String, dictionary: [String: Any]) {
+        self.init()
+        
         self.userUID = userUID
         
         if let startCoordinates = dictionary["start"] as? NSArray {
@@ -43,12 +47,16 @@ struct Session {
             guard let lat = currentCoordinates[0] as? CLLocationDegrees else { return }
             guard let long = currentCoordinates[1] as? CLLocationDegrees else { return }
             self.currentCoordinates = CLLocationCoordinate2D(latitude: lat, longitude: long)
+//            self .startCoordinatesArr.append(lat)
+//            self .startCoordinatesArr.append(long)
         }
         
         if let destinationCoordinates = dictionary["destination"] as? NSArray {
             guard let lat = destinationCoordinates[0] as? CLLocationDegrees else { return }
             guard let long = destinationCoordinates[1] as? CLLocationDegrees else { return }
             self.destinationCoordinates = CLLocationCoordinate2D(latitude: lat, longitude: long)
+//            self .destinationCoordinatesArr.append(lat)
+//            self .destinationCoordinatesArr.append(long)
         }
         
         self.companionUID = dictionary["companion"] as? String ?? ""

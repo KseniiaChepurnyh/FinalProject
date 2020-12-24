@@ -109,14 +109,14 @@ struct Service {
         guard let userUID = Auth.auth().currentUser?.uid else { return }
         let values = ["state": SessionState.inProgress.rawValue] as [String : Any]
         USERS_REF.child(userUID).child("session").updateChildValues(values, withCompletionBlock: completion)
-        guard let companionUID = session.companionUID else { return }
+        let companionUID = session.companionUID
         USERS_REF.child(companionUID).child("session").updateChildValues(values, withCompletionBlock: completion)
     }
     
     func endSession(session: Session, completion: @escaping(Error?, DatabaseReference) -> Void) {
         guard let userUID = Auth.auth().currentUser?.uid else { return }
         USERS_REF.child(userUID).child("session").removeValue(completionBlock: completion)
-        guard let companionUID = session.companionUID else { return }
+        let companionUID = session.companionUID
         USERS_REF.child(companionUID).child("session").removeValue(completionBlock: completion)
     }
     
@@ -133,7 +133,7 @@ struct Service {
         let lon = location.coordinate.longitude
         let values = [lat, lon]
         USERS_REF.child(userUID).child("session").updateChildValues(["currentLocation": values])
-        guard let companionUID = session.companionUID else { return }
+        let companionUID = session.companionUID
         USERS_REF.child(companionUID).child("session").updateChildValues(["currentLocation": values])
     }
 }

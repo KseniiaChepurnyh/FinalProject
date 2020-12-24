@@ -30,7 +30,6 @@ class ActionView: UIView {
     
     // MARK: - Properties
     
-    var toggle = false
     var destination: MKPlacemark? {
         didSet {
             titleLabel.text = destination?.name
@@ -192,27 +191,8 @@ class ActionView: UIView {
         switch buttonAction {
         case .request:
             delegate?.createSession(self)
-            print("rec")
         case .end:
             delegate?.endSession()
-        }
-    }
-    
-    func toggleUI() {
-        if toggle == false {
-            callCompanionButton.isHidden = true
-            titleLabel.isHidden = false
-            addressLabel.isHidden = false
-            collectionView.isHidden = false
-            actionButton.backgroundColor = .lightGray
-            
-            toggle = true
-        } else {
-            actionButton.isEnabled = true
-            addressLabel.isHidden = true
-            collectionView.isHidden = true
-            actionButton.backgroundColor = .mainBlueTint
-            toggle = false
         }
     }
     
@@ -234,7 +214,11 @@ class ActionView: UIView {
     public func configureUI(withConfig config: ActionViewConfiguration) {
         switch config {
         case .request:
-            toggleUI()
+            callCompanionButton.isHidden = true
+            titleLabel.isHidden = false
+            addressLabel.isHidden = false
+            collectionView.isHidden = false
+            actionButton.backgroundColor = .lightGray
             buttonAction = .request
             actionButton.setTitle(buttonAction.description, for: .normal)
             
@@ -243,7 +227,7 @@ class ActionView: UIView {
             
         case .sessionInProgress:
             guard let session = session else { return }
-            guard let companionName = session.companionName else { return }
+            let companionName = session.companionName
             
             if session.role?.rawValue == SessionRole.user.rawValue {
                 titleLabel.text = "\(companionName) is looking after you"
@@ -252,7 +236,10 @@ class ActionView: UIView {
                 titleLabel.text = "You are looking after \(companionName)"
                 callCompanionButton.isHidden = false
             }
-            toggleUI()
+            actionButton.isEnabled = true
+            addressLabel.isHidden = true
+            collectionView.isHidden = true
+            actionButton.backgroundColor = .mainBlueTint
             buttonAction = .end
             actionButton.setTitle(buttonAction.description, for: .normal)
         }

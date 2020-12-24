@@ -12,5 +12,6 @@ target 'FinalProject' do
   pod 'Firebase/Auth'
   pod 'Firebase/Storage'
   pod 'Firebase/Firestore'
+  pod 'RealmSwift'
 
 end
